@@ -13,5 +13,5 @@ data["LogGross$"] = np.log(data["Gross$"])
 data2 = data[data["popularity"] >10]
 #plotting the Scatter plot to check relationship
 plt.figure()
-sns.lmplot(x ="popularity", y ="LogGross$", data = data2, order = 1, ci = None)
+sns.lmplot(x ="popularity", y ="LogGross$", data = data2, order = 2, ci = 95)
 plt.show()
