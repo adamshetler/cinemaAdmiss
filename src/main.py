@@ -76,3 +76,6 @@ for i in range(len(df)):
 
 df.to_csv("data/out/cinemaFeatures.csv")
 
+
+
+
