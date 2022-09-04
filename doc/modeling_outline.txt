@@ -1,0 +1,33 @@
+Modeling: 
+
+	Use features from each movie to predict Gross$ for future movies (regression). First transform Gross$ using log.
+The data is time sensitive (i.e. some movies come before.. some after) therefore when training/validating our model I must 
+train on the earliest movies then validate only on movies that come after the movies the model is trained on. 
+
+		1. Simple Linear Regression (L1/L2) --- verify all 4 linearity asuumptions 
+		2. SVM 
+		3. Random Forest 
+		4. GBM 
+		5. Mixture Model (Gaussian)
+		6. Gaussian Process
+
+
+
+Features:
+
+1. vote_average (num)
+2. popularity (num)
+3. adult (cat)
+4. release date (cat)
+5. genre (cat) 
+6. original_language (cat)
+7. revenue (num)
+8. runtime (num) 
+9. budget (num)
+*10. plot/tagline
+*11. production companies
+*12. production countries
+*13. poster (conv. net)
+*14. URL scrape actor names
+ 
+
