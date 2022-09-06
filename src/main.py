@@ -18,23 +18,22 @@ df = df.assign(NumberShows=df['Gross$'] / df['AvgPerShow$'])
 # # create plots showing overall numbers (include all movies)
 df["NumberShows"].hist(bins=50)
 df2 = df.loc[:, ["AvgPerShow$", "Net$", "Gross$", "Admissions"]]
-df2.hist(bins=50)
-plt.show()
-color = {
-    "boxes": "DarkGreen",
-    "whiskers": "DarkOrange",
-    "medians": "DarkBlue",
-    "caps": "Gray",
-}
-df.loc[:, ["Net$", "Gross$"]].plot.box(color=color, sym="r+")
-plt.show()
-df["AvgPerShow$"].plot.box(color=color, sym="r+")
-plt.show()
-df["Admissions"].plot.box(color=color, sym="r+")
-plt.show()
-df["NumberShows"].plot.box(color=color, sym="r+")
-plt.show()
-
+# df2.hist(bins=50)
+# plt.show()
+# color = {
+#     "boxes": "DarkGreen",
+#     "whiskers": "DarkOrange",
+#     "medians": "DarkBlue",
+#     "caps": "Gray",
+# }
+# df.loc[:, ["Net$", "Gross$"]].plot.box(color=color, sym="r+")
+# plt.show()
+# df["AvgPerShow$"].plot.box(color=color, sym="r+")
+# plt.show()
+# df["Admissions"].plot.box(color=color, sym="r+")
+# plt.show()
+# df["NumberShows"].plot.box(color=color, sym="r+")
+# plt.show()
 
 # use api to pull feature data on each film
 # genre_dict = {
@@ -44,7 +43,7 @@ plt.show()
 # }
 # genre_lookup = pd.dataframe(genre_dict)
 df["Admissions"] = pd.to_numeric(df["Admissions"])
-df = df[df["Admissions"]>10]
+df = df[df["NumberShows"]>10]
 df = df.reset_index(drop=True)
 #df["Title"] = df["Title"].str.replace(r"[\"\',]", '')
 for i in range(len(df)):
@@ -65,13 +64,13 @@ for i in range(len(df)):
         df.loc[i, "revenue"] = data["revenue"]
         df.loc[i, "runtime"] = data["runtime"]
         df.loc[i, "budget"] = data["budget"]
-        #df[i, "genres"] = data["genres"]
-        #df[i, "production_companies"] = data["production_companies]
-        #df[i, "production_countries"] = data["production_countries"]
-        #df[i, "tagline"] = data["tagline"]
-        #df[i, "overview"] = data["overview"]
-        #df[i, "poster_path"] = data["poster_path"]
-        #df[i, "homepage] = data["homepage"]
+        #df.loc[i, "genres"] = data["genres"]
+        #df.loc[i, "production_companies"] = data["production_companies"]
+        #df.loc[i, "production_countries"] = data["production_countries"]
+        df.loc[i, "tagline"] = data["tagline"]
+        df.loc[i, "overview"] = data["overview"]
+        df.loc[i, "poster_path"] = data["poster_path"]
+        df.loc[i, "homepage"] = data["homepage"]
     print(str(i) + ": " + title + " Complete")
 
 df.to_csv("data/out/cinemaFeatures.csv")

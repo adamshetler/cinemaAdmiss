@@ -10,6 +10,8 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn import gaussian_process
 from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel
 import time
+from sklearn import ensemble
+from sklearn.inspection import permutation_importance
 
 data = pd.read_csv("data/out/cinemaFeatures.csv")
 print(data.head)
@@ -81,14 +83,14 @@ numerical_data = data[["revenue"]]
 scaler = sklearn.preprocessing.StandardScaler().fit(numerical_data)
 data_scaled = scaler.transform(numerical_data)
 data_scaled = pd.DataFrame(data_scaled, columns=["revenue"])
-data = pd.concat([data_scaled, data[["LogGross$"]]], axis=1)
+data1 = pd.concat([data_scaled, data[["LogGross$"]]], axis=1)
 # data = pd.concat([data_scaled, original_language_ohe, data[["LogGross$"]]], axis=1)
 print(data.columns)
 #before training linear regression model - split data by release date (80-20 split)
 # therefore train model on first 386 rows, use remainder for validation
 
-dataTrain = data[0:113]
-dataTest = data[113:len(data)]
+dataTrain = data1[0:113]
+dataTest = data1[113:len(data)]
 
 print(dataTest.shape)
 print(dataTrain.shape)
@@ -187,4 +189,113 @@ plt.scatter(X_train, y_train, color="black")
 plt.show()
 
 
+# Gradient Boosted Regression - univariate
+params = {
+    "n_estimators": 500,
+    "max_depth": 4,
+    "min_samples_split": 5,
+    "learning_rate": 0.01,
+    "loss": "squared_error",
+}
 
+reg = ensemble.GradientBoostingRegressor(**params)
+reg.fit(X_train, y_train)
+mse = mean_squared_error(y_test, reg.predict(X_test))
+print("(GBM: The mean squared error (MSE) on test set: {:.4f}".format(mse))
+y_pred = reg.predict(X_plot)
+plt.plot(
+    X_plot, y_pred, c="g", label="GBM"
+)
+plt.xlabel("data")
+plt.ylabel("target")
+plt.title("GBM")
+_ = plt.legend()
+plt.scatter(X_test, y_test)
+plt.show()
+
+test_score = np.zeros((params["n_estimators"],), dtype=np.float64)
+for i, y_pred in enumerate(reg.staged_predict(X_test)):
+    test_score[i] = reg.loss_(y_test, y_pred)
+
+fig = plt.figure(figsize=(6, 6))
+plt.subplot(1, 1, 1)
+plt.title("Deviance")
+plt.plot(
+    np.arange(params["n_estimators"]) + 1,
+    reg.train_score_,
+    "b-",
+    label="Training Set Deviance",
+)
+plt.plot(
+    np.arange(params["n_estimators"]) + 1, test_score, "r-", label="Test Set Deviance"
+)
+plt.legend(loc="upper right")
+plt.xlabel("Boosting Iterations")
+plt.ylabel("Deviance")
+fig.tight_layout()
+plt.show()
+
+# Gradient Boosted Regression - multivariate
+print(data.columns)
+numerical_data = data[["vote_average", "popularity", "revenue", "runtime", "budget"]]
+scaler = sklearn.preprocessing.StandardScaler().fit(numerical_data)
+data_scaled = scaler.transform(numerical_data)
+data_scaled = pd.DataFrame(data_scaled, columns=["vote_average", "popularity", "revenue", "runtime", "budget"])
+data = pd.concat([data_scaled, data[["LogGross$"]]], axis=1)
+
+dataTrain = data[0:113]
+dataTest = data[113:len(data)]
+
+print(dataTest.shape)
+print(dataTrain.shape)
+# "LogGross$", "Gross$", "Net$", "Admissions", "AvgPerShow$", "NumberShows"
+y_train = dataTrain["LogGross$"]
+y_test = dataTest["LogGross$"]
+
+X_train = dataTrain[["vote_average", "popularity", "revenue", "runtime", "budget"]]
+X_test = dataTest[["vote_average", "popularity", "revenue", "runtime", "budget"]]
+
+
+print("Train", X_train.shape, y_train.shape)
+print("Test", X_test.shape, y_test.shape)
+
+# X_train = dataTrain[["revenue"]]
+# X_test = dataTest[["revenue"]]
+
+params = {
+    "n_estimators": 500,
+    "max_depth": 4,
+    "min_samples_split": 5,
+    "learning_rate": 0.01,
+    "loss": "squared_error",
+}
+
+reg = ensemble.GradientBoostingRegressor(**params)
+reg.fit(X_train, y_train)
+
+mse = mean_squared_error(y_test, reg.predict(X_test))
+print("(GBM: The mean squared error (MSE) on test set: {:.4f}".format(mse))
+
+
+feature_importance = reg.feature_importances_
+sorted_idx = np.argsort(feature_importance)
+pos = np.arange(sorted_idx.shape[0]) + 0.5
+fig = plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.barh(pos, feature_importance[sorted_idx], align="center")
+plt.yticks(pos, np.array(dataTrain.columns)[sorted_idx])
+plt.title("Feature Importance (MDI)")
+
+result = permutation_importance(
+    reg, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2
+)
+sorted_idx = result.importances_mean.argsort()
+plt.subplot(1, 2, 2)
+plt.boxplot(
+    result.importances[sorted_idx].T,
+    vert=False,
+    labels=np.array(dataTrain.columns)[sorted_idx],
+)
+plt.title("Permutation Importance (test set)")
+fig.tight_layout()
+plt.show()
