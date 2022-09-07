@@ -55,51 +55,72 @@ for j in table1.find_all('tr')[1:]:
     row = [i.text for i in row_data]
     info.append(row)
 
-#mydata.loc[0] = info
-#####################################################################################################
-
-try:
-    from googlesearch import search
-except ImportError:
-    print("No module named 'google' found")
-
-# to search
-query = "meru film wiki"
-
-urls = []
-for j in search(query,tld="com", num=10, stop=10, pause=2):
-    urls.append(j)
-print(urls[0])
-
-
-
-test_movies = data.Title[0:5]
-urls = []
-for i in range(len(test_movies)):
-    movie = test_movies[i]
-    query = movie + " film wiki"
-    for search_res in search(query, tld="com", num=10, stop=10, pause=2):
-        urls.append(search_res)
-
-    #create page object
-    page = requests.get(urls[0])
-    soup = BeautifulSoup(page.text, 'lxml')
-    # Obtain information from tag <table>
-    table1 = soup.find('table')
-
-    info = []
-    for j in table1.find_all('tr')[1:]:
-        row_data = j.find_all('td')
-        row = [i.text for i in row_data]
-        info.append(row)
-    print(info)
-
-    #mydata.loc[i] = info
-
+mydata.loc[0] = info
 print(mydata)
 
+# select all paragraphs
+paragraphs1=soup.select("div p")
+#print(paragraphs1)
+# select all paragraphs preceded by a header
+paragraphs2 = soup.select("h2 ~ p")
+#print(paragraphs2)
+#select paragraph with header "Premise"
+premise_p = soup.select('h2:-soup-contains("Premise") + p')
+# print(premise_p)
+#parse wiki page for paragraphs with headers: Premise, Reception, Plot and Awards
+soup = BeautifulSoup(page.text, 'lxml')
+headers = ['Premise', 'Reception', 'Awards', 'Plot']
+selector = ', '.join([f'h2:-soup-contains("{header}") + p' for header in headers])
+paragraphs_list = [i.text for i in soup.select(selector)]
+#print(paragraphs_list)
 
+header= 'premise'
+print(f'h2:-soup-contains("{header}") + p')
+#####################################################################################################
 
-
-
-
+# try:
+#     from googlesearch import search
+# except ImportError:
+#     print("No module named 'google' found")
+#
+# # to search
+# query = "meru film wiki"
+#
+# urls = []
+# for j in search(query,tld="com", num=10, stop=10, pause=2):
+#     urls.append(j)
+# print(urls[0])
+#
+#
+#
+# test_movies = data.Title[0:5]
+#
+# for i in range(len(test_movies)):
+#     movie = test_movies[i]
+#     query = movie + " film wiki"
+#     urls = []
+#     for search_res in search(query, tld="com", num=10, stop=10, pause=2):
+#         urls.append(search_res)
+#
+#     #create page object
+#     page = requests.get(urls[0])
+#     soup = BeautifulSoup(page.text, 'lxml')
+#     # Obtain information from tag <table>
+#     table1 = soup.find('table')
+#
+#     info = []
+#     for j in table1.find_all('tr')[1:]:
+#         row_data = j.find_all('td')
+#         row = [i.text for i in row_data]
+#         info.append(row)
+#     #print(info)
+#
+#     #mydata.loc[i] = info
+#
+# print(mydata)
+#
+#
+#
+#
+#
+#
