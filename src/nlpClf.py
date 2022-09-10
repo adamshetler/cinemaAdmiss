@@ -60,7 +60,7 @@ nlp_data = data[["scrapedInfo", "label"]]
 #nlp_data = data[["overview", "label"]]
 
 #data split non-time dependent
-# X_train, X_test, y_train, y_test = train_test_split(data["overview"], data["label"], test_size=0.33, random_state=42)
+# X_train, X_test, y_train, y_test = train_test_split(data["scrapedInfo"], data["label"], test_size=0.33, random_state=42)
 
 # time dependent data split (80-20)
 X_train = nlp_data.scrapedInfo[0:378]
@@ -73,7 +73,7 @@ y_test = nlp_data.label[378:len(data)]
 # X_test = nlp_data.overview[378:len(data)]
 # y_test = nlp_data.label[378:len(data)]
 
-count_vec = CountVectorizer(stop_words = "english", lowercase=True, ngram_range=(1,1))
+count_vec = CountVectorizer(stop_words = "english", lowercase=True, ngram_range=(1,3))
 X_train_vectors = count_vec.fit_transform(X_train).toarray()
 print(count_vec.get_feature_names_out())
 
@@ -131,3 +131,4 @@ print("best score: ", gs_clf.best_score_)
 for param_name in sorted(parameters.keys()):
     print("%s: %r" % (param_name, gs_clf.best_params_[param_name]))
 
+# TODO: add conv net on movie posters.. use scores as numerical feature in final clf model
