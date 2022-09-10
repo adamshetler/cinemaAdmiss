@@ -10,7 +10,8 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 
-data = pd.read_csv("data/out/cinemaFeatures.csv")
+# data = pd.read_csv("data/out/cinemaFeatures.csv")
+data = pd.read_csv("data/out/cinemaFeaturesTextScrape.csv")
 print(data.head)
 print(data.shape)
 data = data.drop(data[data.release_date.str.len()!=10].index)
@@ -22,8 +23,10 @@ data["LogGross$"] = np.log(data["Gross$"])
 data["release_date"] = pd.to_datetime(data["release_date"])
 data = data.sort_values(by="release_date", ascending=True)
 data = data.reset_index()
-data.dropna(subset=['overview'], inplace=True)
+data.dropna(subset=['scrapedInfo'], inplace=True)
 data = data.reset_index()
+#data.dropna(subset=['overview'], inplace=True)
+#data = data.reset_index()
 print(data.shape)
 data["LogAdmissions"] = np.log(data.Admissions)
 data["LogAdmissions"].hist(bins=50)
@@ -53,16 +56,22 @@ conditions = [(data["LogAdmissions"] < 7),
 label = ["Low", "High"]
 
 data["label"] = np.select(conditions, label)
-nlp_data = data[["overview", "label"]]
+nlp_data = data[["scrapedInfo", "label"]]
+#nlp_data = data[["overview", "label"]]
 
 #data split non-time dependent
 # X_train, X_test, y_train, y_test = train_test_split(data["overview"], data["label"], test_size=0.33, random_state=42)
 
 # time dependent data split (80-20)
-X_train = nlp_data.overview[0:378]
+X_train = nlp_data.scrapedInfo[0:378]
 y_train = nlp_data.label[0:378]
-X_test = nlp_data.overview[378:len(data)]
+X_test = nlp_data.scrapedInfo[378:len(data)]
 y_test = nlp_data.label[378:len(data)]
+
+# X_train = nlp_data.overview[0:378]
+# y_train = nlp_data.label[0:378]
+# X_test = nlp_data.overview[378:len(data)]
+# y_test = nlp_data.label[378:len(data)]
 
 count_vec = CountVectorizer(stop_words = "english", lowercase=True, ngram_range=(1,1))
 X_train_vectors = count_vec.fit_transform(X_train).toarray()
